@@ -4,6 +4,7 @@ import 'ace-builds/src-noconflict/mode-javascript';
 import 'ace-builds/src-noconflict/theme-monokai';
 import Modal from 'react-bootstrap/Modal';
 import Button from '@restart/ui/esm/Button';
+import "bootstrap/dist/css/bootstrap.min.css";
 
 import './App.css';
 import tasks from './data/tasks';
@@ -59,9 +60,10 @@ function App() {
       body: JSON.stringify({
         tasks: selectedTasks,
       }),
-    }).then((res) => {
-      console.log(res);
-      setId(res["$oid"]);
+    })
+    .then(response => response.json())
+    .then((data) => {
+      setId(data["$oid"]);
       setLoading(false);
     });
   }
@@ -138,14 +140,14 @@ function App() {
       </section>
       <Modal
         show={show}
+        onHide={() => setShow(false)}
         size="lg"
         aria-labelledby="contained-modal-title-vcenter"
         centered
       >
-        {loading?<>Posting code</>:<> ID: {id}
+        {loading?<>...Posting Task</>:<> ID: {id}
         <Button onClick={()=>setShow(false)}>Close</Button></>
         }
-
       </Modal>
     </div>
   );
