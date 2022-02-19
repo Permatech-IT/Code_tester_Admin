@@ -2,6 +2,8 @@ import { useState } from 'react';
 import AceEditor from "react-ace";
 import 'ace-builds/src-noconflict/mode-javascript';
 import 'ace-builds/src-noconflict/theme-monokai';
+import Modal from 'react-bootstrap/Modal';
+import Button from '@restart/ui/esm/Button';
 
 import './App.css';
 import tasks from './data/tasks';
@@ -34,7 +36,9 @@ function App() {
     medium: 0,
     hard: 0,
   });
-
+ const [show, setShow] = useState(false);
+ const [loading, setLoading] = useState(false);
+ const [id, setId] = useState(null);
   const removeFromSelectedTasks = (task) => {
     const newSelectedTasks = selectedTasks.filter(selectedTask => selectedTask.id !== task.id);
 
@@ -42,6 +46,22 @@ function App() {
     setRemainingTasks([...remainingTasks, task]);
 
     countDifficultyLevels(newSelectedTasks, setDifficultyLevelsCount);
+  }
+
+  const publish = () => {
+    setShow(true);
+    fetch('https://ap-south-1.aws.data.mongodb-api.com/app/application-0-pmrso/endpoint/assesment', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        tasks: selectedTasks,
+      }),
+    }).then((res) => {
+      setId(res["$oid"]);
+      setLoading(false);
+    });
   }
 
   const handleChange = (e) => {
@@ -108,9 +128,24 @@ function App() {
           <p>Medium: {difficultyLevelsCount.medium}</p>
           <p>Hard: {difficultyLevelsCount.hard}</p>
 
-          <button className={`publish ${selectedTasks.length === 0 ? 'disabled' : ''}`} disabled={selectedTasks.length === 0}>Publish</button>
+          <button className={`publish ${selectedTasks.length === 0 ? 'disabled' : ''}`} 
+          disabled={selectedTasks.length === 0}
+          onClick={publish}
+          >Publish</button>
         </aside>
       </section>
+      <Modal
+        show={show}
+        onHide={() => setShow(false)}
+        size="lg"
+        aria-labelledby="contained-modal-title-vcenter"
+        centered
+      >
+        {loading?<>Posting code</>:<> ID: {id}
+        <Button onClick={()=>setShow(false)}>Close</Button></>
+        }
+
+      </Modal>
     </div>
   );
 }
