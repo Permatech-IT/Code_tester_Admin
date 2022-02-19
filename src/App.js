@@ -50,6 +50,7 @@ function App() {
 
   const publish = () => {
     setShow(true);
+    setLoading(true);
     fetch('https://ap-south-1.aws.data.mongodb-api.com/app/application-0-pmrso/endpoint/assesment', {
       method: 'POST',
       headers: {
@@ -59,6 +60,7 @@ function App() {
         tasks: selectedTasks,
       }),
     }).then((res) => {
+      console.log(res);
       setId(res["$oid"]);
       setLoading(false);
     });
@@ -136,7 +138,6 @@ function App() {
       </section>
       <Modal
         show={show}
-        onHide={() => setShow(false)}
         size="lg"
         aria-labelledby="contained-modal-title-vcenter"
         centered
