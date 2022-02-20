@@ -9,12 +9,6 @@ import './App.css';
 import tasks from './data/tasks';
 import Loader from './Loader';
 
-const transformedTaskOptions = tasks.map(task => ({
-  value: task.id,
-  label: task.title,
-  ...task,
-}));
-
 const countDifficultyLevels = (selectedTasks, setDifficultyLevelsCount) => {
   const counts = {
     easy: 0,
@@ -30,6 +24,7 @@ const countDifficultyLevels = (selectedTasks, setDifficultyLevelsCount) => {
 }
 
 function App() {
+  const [task, setTask] = useState(null);
   const [selectedTasks, setSelectedTasks] = useState([]);
   const [remainingTasks, setRemainingTasks] = useState(tasks);
   const [difficultyLevelsCount, setDifficultyLevelsCount] = useState({
@@ -71,9 +66,10 @@ function App() {
 
   const handleChange = (e) => {
     const { value } = e.target;
+    setTask(value);
 
-    const selectedTask = transformedTaskOptions.find(
-      task => task.value === parseInt(value)
+    const selectedTask = tasks.find(
+      task => task.id === parseInt(value)
     );
 
     setSelectedTasks([...selectedTasks, selectedTask]);
@@ -86,13 +82,17 @@ function App() {
 
   return (
     <div className="App">
-      <select onChange={handleChange} defaultValue="select">
+      <select onChange={handleChange} defaultValue="select" value={task}>
         <option value="select" disabled>Select a task</option>
-        {remainingTasks.map(task => (
-          <option key={task.id} value={task.id}>
-            {task.title}
-          </option>
-        ))}
+        {remainingTasks.map(task => {
+          const isOptionDisabled = selectedTasks.some(selectedTask => selectedTask.id === task.id);
+
+          return (
+            <option key={task.id} value={task.id} disabled={isOptionDisabled}>
+              {task.title}
+            </option>
+          )
+        })}
       </select>
 
       <section className="cont">
