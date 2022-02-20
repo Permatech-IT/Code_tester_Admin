@@ -1,13 +1,13 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import AceEditor from "react-ace";
 import 'ace-builds/src-noconflict/mode-javascript';
 import 'ace-builds/src-noconflict/theme-monokai';
 import Modal from 'react-bootstrap/Modal';
-import Button from '@restart/ui/esm/Button';
 import "bootstrap/dist/css/bootstrap.min.css";
 
 import './App.css';
 import tasks from './data/tasks';
+import Loader from './Loader';
 
 const transformedTaskOptions = tasks.map(task => ({
   value: task.id,
@@ -37,9 +37,9 @@ function App() {
     medium: 0,
     hard: 0,
   });
- const [show, setShow] = useState(false);
- const [loading, setLoading] = useState(false);
- const [id, setId] = useState(null);
+  const [show, setShow] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [id, setId] = useState(null);
   const removeFromSelectedTasks = (task) => {
     const newSelectedTasks = selectedTasks.filter(selectedTask => selectedTask.id !== task.id);
 
@@ -49,10 +49,10 @@ function App() {
     countDifficultyLevels(newSelectedTasks, setDifficultyLevelsCount);
   }
 
-  const publish = () => {
-    setShow(true);
+  const publish = async () => {
     setLoading(true);
-    fetch('https://ap-south-1.aws.data.mongodb-api.com/app/application-0-pmrso/endpoint/assesment', {
+    const response = await fetch(
+      'https://ap-south-1.aws.data.mongodb-api.com/app/application-0-pmrso/endpoint/assesment', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -61,12 +61,13 @@ function App() {
         tasks: selectedTasks,
       }),
     })
-    .then(response => response.json())
-    .then((data) => {
-      setId(data["$oid"]);
-      setLoading(false);
-    });
+    const data = await response.json();
+    setId(data.$oid);
+    setLoading(false);
+    setShow(true);
   }
+
+  const closeModal = useCallback(() => setShow(false), [])
 
   const handleChange = (e) => {
     const { value } = e.target;
@@ -94,37 +95,37 @@ function App() {
         ))}
       </select>
 
-      <section className="container">
+      <section className="cont">
         <section className="selected-tasks">
           {selectedTasks.length === 0
             ? <h3 className="no-task">No task selected</h3>
             : selectedTasks.map(task => (
-            <div key={task.id} className="task">
-              <div className="info">
-                <div className="text">
-                  <h3>{task.title}</h3>
-                  <p>{task.description}</p>
-                </div>
+              <div key={task.id} className="task">
+                <div className="info">
+                  <div className="text">
+                    <h3>{task.title}</h3>
+                    <p>{task.description}</p>
+                  </div>
 
-                <button type='button' onClick={() => removeFromSelectedTasks(task)}>Remove</button>
+                  <button type='button' onClick={() => removeFromSelectedTasks(task)}>Remove</button>
+                </div>
+                <AceEditor
+                  placeholder="Placeholder Text"
+                  mode="javascript"
+                  theme="monokai"
+                  name="blah2"
+                  fontSize={14}
+                  showPrintMargin={true}
+                  showGutter={true}
+                  highlightActiveLine={true}
+                  value={`//${task.title}\n//${task.description}\n${task.code}`}
+                  setOptions={{
+                    showLineNumbers: true,
+                    tabSize: 4,
+                    readOnly: true,
+                  }} />
               </div>
-              <AceEditor
-                placeholder="Placeholder Text"
-                mode="javascript"
-                theme="monokai"
-                name="blah2"
-                fontSize={14}
-                showPrintMargin={true}
-                showGutter={true}
-                highlightActiveLine={true}
-                value={`//${task.title}\n//${task.description}\n${task.code}`}
-                setOptions={{
-                  showLineNumbers: true,
-                  tabSize: 4,
-                  readOnly: true,
-                }} />
-            </div>
-          ))}
+            ))}
         </section>
         <aside className="difficulty-levels">
           <h3>Difficulty levels</h3>
@@ -132,22 +133,25 @@ function App() {
           <p>Medium: {difficultyLevelsCount.medium}</p>
           <p>Hard: {difficultyLevelsCount.hard}</p>
 
-          <button className={`publish ${selectedTasks.length === 0 ? 'disabled' : ''}`} 
-          disabled={selectedTasks.length === 0}
-          onClick={publish}
-          >Publish</button>
+          <button
+            className={`publish ${selectedTasks.length === 0 ? 'disabled' : ''}`}
+            disabled={selectedTasks.length === 0 || loading}
+            onClick={publish}
+          >
+            {loading ? <Loader /> : 'Publish'}
+          </button>
         </aside>
       </section>
-      <Modal
-        show={show}
-        onHide={() => setShow(false)}
-        size="lg"
-        aria-labelledby="contained-modal-title-vcenter"
-        centered
-      >
-        {loading?<>...Posting Task</>:<> ID: {id}
-        <Button onClick={()=>setShow(false)}>Close</Button></>
-        }
+      <Modal show={show} onHide={closeModal} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Task link:</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          Copy this link and share it with candidates:
+          <br />
+          <br />
+          <pre>https://someurl.com/task/{id}</pre>
+        </Modal.Body>
       </Modal>
     </div>
   );
