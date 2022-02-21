@@ -106,7 +106,7 @@ function App() {
   return (
     <div className="App">
       <select onChange={handleChange} defaultValue="select" value={task}>
-        <option value="select" disabled>Select a task</option>
+        <option value="select" disabled>Select a question</option>
         {remainingTasks.map(task => {
           const isOptionDisabled = selectedTasks.some(selectedTask => selectedTask.id === task.id);
 
@@ -167,13 +167,13 @@ function App() {
       </section>
       <Modal show={show} onHide={closeModal} centered>
         <Modal.Header closeButton>
-          <Modal.Title>Task link:</Modal.Title>
+          <Modal.Title>Task ID:</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          Copy this link and share it with candidates:
+          Copy this ID:
           <br />
           <br />
-          <pre>https://someurl.com/task/{id}</pre>
+          <pre>{id}</pre>
         </Modal.Body>
       </Modal>
     </div>
