@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/Code_tester_Admin/static/css/main.cecdacc8.css",
+    "main.js": "/Code_tester_Admin/static/js/main.656c1ac3.js",
+    "static/js/787.86e51498.chunk.js": "/Code_tester_Admin/static/js/787.86e51498.chunk.js",
+    "index.html": "/Code_tester_Admin/index.html",
+    "main.cecdacc8.css.map": "/Code_tester_Admin/static/css/main.cecdacc8.css.map",
+    "main.656c1ac3.js.map": "/Code_tester_Admin/static/js/main.656c1ac3.js.map",
+    "787.86e51498.chunk.js.map": "/Code_tester_Admin/static/js/787.86e51498.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.cecdacc8.css",
+    "static/js/main.656c1ac3.js"
+  ]
+}
