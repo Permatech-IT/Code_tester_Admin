@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import AceEditor from "react-ace";
 import 'ace-builds/src-noconflict/mode-javascript';
 import 'ace-builds/src-noconflict/theme-monokai';
@@ -6,7 +6,6 @@ import Modal from 'react-bootstrap/Modal';
 import "bootstrap/dist/css/bootstrap.min.css";
 
 import './App.css';
-import tasks from './data/tasks';
 import Loader from './Loader';
 
 const countDifficultyLevels = (selectedTasks, setDifficultyLevelsCount) => {
@@ -23,10 +22,17 @@ const countDifficultyLevels = (selectedTasks, setDifficultyLevelsCount) => {
   setDifficultyLevelsCount(counts);
 }
 
+const transformTasks = (tasks) => tasks.map(task => ({
+  ...task,
+  id: task._id.$oid
+}))
+
+
 function App() {
   const [task, setTask] = useState(null);
   const [selectedTasks, setSelectedTasks] = useState([]);
-  const [remainingTasks, setRemainingTasks] = useState(tasks);
+  const [remainingTasks, setRemainingTasks] = useState([]);
+  const [allTasks, setAllTasks] = useState([]);
   const [difficultyLevelsCount, setDifficultyLevelsCount] = useState({
     easy: 0,
     medium: 0,
@@ -35,6 +41,23 @@ function App() {
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
   const [id, setId] = useState(null);
+
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+
+      const response = await fetch('https://ap-south-1.aws.data.mongodb-api.com/app/application-0-pmrso/endpoint/allQuestions');
+      const data = await response.json();
+      const transformedData = transformTasks(data)
+      setAllTasks(transformedData);
+      setRemainingTasks(transformedData);
+
+      setLoading(false);
+    })()
+  }, []);
+
+  console.log(remainingTasks);
+
   const removeFromSelectedTasks = (task) => {
     const newSelectedTasks = selectedTasks.filter(selectedTask => selectedTask.id !== task.id);
 
@@ -68,8 +91,8 @@ function App() {
     const { value } = e.target;
     setTask(value);
 
-    const selectedTask = tasks.find(
-      task => task.id === parseInt(value)
+    const selectedTask = allTasks.find(
+      task => task.id === value
     );
 
     setSelectedTasks([...selectedTasks, selectedTask]);
